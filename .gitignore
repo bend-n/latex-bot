@@ -6,3 +6,9 @@ logs/
 .vscode/
 exports/
 *.x86_64
+token
+*.tex
+*.aux
+*.dvi
+*.log
+texs/

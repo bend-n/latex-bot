@@ -30,7 +30,7 @@ func _ready():
 	var dir = Directory.new()
 	if !dir.dir_exists("res://texs"):
 		dir.make_dir("texs")
-	f.open("res://texs/.gdignore", File.WRITE) # touch .gdignore
+	f.open("res://texs/.gdignore", File.WRITE)  # touch .gdignore
 	f.close()
 	var bot := DiscordBot.new()
 	add_child(bot)
@@ -77,7 +77,7 @@ func _on_message_create(bot: DiscordBot, message: Message, _channel: Dictionary)
 	if !msg:
 		return
 
-	var th :Thread
+	var th: Thread
 	for thread in thread_pool:
 		if !thread.is_alive():
 			th = thread
@@ -113,17 +113,20 @@ func latex2img(latex: String):
 	f.open("res://texs/%s.tex" % name, File.WRITE_READ)
 	f.store_string(latex)
 	f.close()
-	var output :PoolStringArray = []
-	var err = OS.execute("bash", ["-c", "cd texs && latex -interaction=nonstopmode '%s.tex'" % name], true, output, true)
+	var output: PoolStringArray = []
+	var err = OS.execute(
+		"bash", ["-c", "cd texs && latex -interaction=nonstopmode '%s.tex'" % name], true, output, true
+	)
 	if err:
 		return {err = err, output = "(la)" + output.join(" ")}
 	output.resize(0)
 	var dvipng = [
-		"-c", "dvipng -strict -bg Transparent --png -Q 250 -D 250 -T tight -o 'texs/%s.png' 'texs/%s.dvi'" % [name, name]
+		"-c",
+		"dvipng -strict -bg Transparent --png -Q 250 -D 250 -T tight -o 'texs/%s.png' 'texs/%s.dvi'" % [name, name]
 	]
 	err = OS.execute("bash", dvipng, true, output, true)
 	if err:
-		return {err = err, output = "(dvi)" +output.join(" ")}
+		return {err = err, output = "(dvi)" + output.join(" ")}
 	var img := Image.new()
 	err = img.load("res://texs/%s.png" % name)
 	OS.execute("bash", ["-c", "rm 'texs/%s.'*" % name], false)

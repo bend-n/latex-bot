@@ -1,7 +1,7 @@
-extends Node
+extends DiscordBot
+class_name LaTeXbot
 
 const laTeXture := preload("./addons/GodoTeX/LaTeXture.cs")
-
 
 func compile(source: String) -> RegEx:
 	var reg := RegEx.new()
@@ -10,37 +10,33 @@ func compile(source: String) -> RegEx:
 
 
 func _ready() -> void:
-	var bot := DiscordBot.new()
-	add_child(bot)
 	var file := File.new()
 	var err := file.open("res://token", File.READ)
-	var token: String
 	if err == OK:
-		token = file.get_as_text()
+		TOKEN = file.get_as_text()
 	elif OS.has_environment("TOKEN"):
-		token = OS.get_environment("TOKEN")
+		TOKEN = OS.get_environment("TOKEN")
 	else:
 		push_error("token missing")
 	file.close()
-	bot.TOKEN = token
-	bot.connect("bot_ready", self, "_on_bot_ready")
-	bot.connect("message_create", self, "_on_message_create")
-	bot.connect("interaction_create", self, "_on_interaction_create")
-	bot.login()
+	connect("bot_ready", self, "_on_bot_ready")
+	connect("message_create", self, "_on_message_create")
+	connect("interaction_create", self, "_on_interaction_create")
+	login()
 
 
-func _on_bot_ready(bot: DiscordBot) -> void:
-	bot.set_presence({"activity": {"type": "Game", "name": "Printing LaTeX"}})
+func _on_bot_ready(_bot: DiscordBot) -> void:
+	set_presence({"activity": {"type": "Game", "name": "Printing LaTeX"}})
 	var latex_cmd: ApplicationCommand = ApplicationCommand.new() \
 	  .set_name("latex") \
 	  .add_option(ApplicationCommand.string_option("latex", "The LaTeX to render", { required = true })) \
 	  .set_description("Render LaTeX")
-	bot.register_command(latex_cmd)
-	print("Logged in as " + bot.user.username + "#" + bot.user.discriminator)
-	print("Listening on " + str(bot.channels.size()) + " channels and " + str(bot.guilds.size()) + " guilds.")
+	register_command(latex_cmd)
+	print("Logged in as " + user.username + "#" + user.discriminator)
+	print("Listening on " + str(channels.size()) + " channels and " + str(guilds.size()) + " guilds.")
 
 
-func _on_message_create(bot: DiscordBot, message: Message, _channel: Dictionary) -> void:
+func _on_message_create(_bot: DiscordBot, message: Message, _channel: Dictionary) -> void:
 	if message.author.bot:
 		return
 	var msg: String
@@ -61,7 +57,7 @@ func _on_message_create(bot: DiscordBot, message: Message, _channel: Dictionary)
 		return
 		
 	var img := latex2img(msg)
-	bot.reply(message, "Tex:", {"files": [{"name": "latex.png", "media_type": "image/png", "data": img}]})
+	reply(message, "Tex:", {"files": [{"name": "latex.png", "media_type": "image/png", "data": img}]})
 
 func _on_interaction_create(_bot: DiscordBot, interaction: DiscordInteraction) -> void:
 	if not interaction.is_command():
@@ -74,9 +70,7 @@ func _on_interaction_create(_bot: DiscordBot, interaction: DiscordInteraction) -
 			var pay: String = command_data.options[0].value.strip_edges()
 			if pay:
 				interaction.defer_reply();
-				var t := Time.get_ticks_usec()
 				var img := latex2img(command_data.options[0].value)
-				print_debug("took %.2f seconds" % ((Time.get_ticks_usec() - t) / 1000000.0))
 				interaction.edit_reply({"files": [{"content": "", "name": "latex.png", "media_type": "image/png", "data": img}]})
 			else:
 				interaction.reply({"content": "Bad latex"})
@@ -86,10 +80,12 @@ func _on_interaction_create(_bot: DiscordBot, interaction: DiscordInteraction) -
 
 func latex2img(latex: String) -> PoolByteArray:
 	print_debug("----\n%s\n----" % latex)
+	var t := Time.get_ticks_usec()
 	var tex := laTeXture.new()
 	tex.LatexExpression = latex
 	tex.MathColor = Color.white
 	tex.Fill = true
 	tex.FontSize = 80
 	tex.Render()
+	print_debug("took %.2f seconds" % ((Time.get_ticks_usec() - t) / 1000000.0))
 	return tex.get_data().save_png_to_buffer()

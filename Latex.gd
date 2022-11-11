@@ -3,6 +3,8 @@ class_name LaTeXbot
 
 const laTeXture := preload("./addons/GodoTeX/LaTeXture.cs")
 
+var max_height := 200
+
 func compile(source: String) -> RegEx:
 	var reg := RegEx.new()
 	reg.compile(source)
@@ -57,7 +59,7 @@ func _on_message_create(_bot: DiscordBot, message: Message, _channel: Dictionary
 		return
 		
 	var img := latex2img(msg)
-	reply(message, "Tex:", {"files": [{"name": "latex.png", "media_type": "image/png", "data": img}]})
+	reply(message, "", {"files": [{"name": "latex.png", "media_type": "image/png", "data": img}]})
 
 func _on_interaction_create(_bot: DiscordBot, interaction: DiscordInteraction) -> void:
 	if not interaction.is_command():
@@ -87,5 +89,8 @@ func latex2img(latex: String) -> PoolByteArray:
 	tex.Fill = true
 	tex.FontSize = 80
 	tex.Render()
+	while tex.get_height() > max_height:
+		tex.FontSize /= 2
+		tex.Render()
 	print_debug("took %.2f seconds" % ((Time.get_ticks_usec() - t) / 1000000.0))
 	return tex.get_data().save_png_to_buffer()

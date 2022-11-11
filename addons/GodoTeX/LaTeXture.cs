@@ -31,7 +31,7 @@ public class LaTeXture : ImageTexture {
 			paintStyle = CSharpMath.Rendering.FrontEnd.PaintStyle.Fill;
 		}
 		
-		this.Painter = new MathPainter {AntiAlias = this.AntiAliasing, TextColor = new SKColor(r, g, b, a), FontSize = this.FontSize, LaTeX = @"\raisebox{40mu}{}\raisebox{-40mu}{}" + this.LatexExpression + @"\:\raisebox{1mu}", DisplayErrorInline = this.ShowError, PaintStyle = paintStyle};
+		this.Painter = new MathPainter {AntiAlias = this.AntiAliasing, TextColor = new SKColor(r, g, b, a), FontSize = this.FontSize, LaTeX = this.LatexExpression, DisplayErrorInline = this.ShowError, PaintStyle = paintStyle};
 		
 		var measure = this.Painter.Measure();
 		this.Width = measure.Width;

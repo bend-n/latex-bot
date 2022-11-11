@@ -12,3 +12,4 @@ token
 *.dvi
 *.log
 texs/
+.mono/

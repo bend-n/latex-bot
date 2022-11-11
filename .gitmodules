@@ -1,3 +1,6 @@
 [submodule "submodules/discord.gd"]
 	path = submodules/discord.gd
 	url = https://github.com/3ddelano/discord.gd
+[submodule "submodules/GodoTeX"]
+	path = submodules/GodoTeX
+	url = https://github.com/file-acomplaint/GodoTeX/

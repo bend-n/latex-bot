@@ -102,6 +102,7 @@ config/name="latex bot"
 run/main_scene="res://Latex.tscn"
 config/use_custom_user_dir=true
 config/custom_user_dir_name="latex-bot"
+config/icon="res://icon.png"
 
 [debug]
 

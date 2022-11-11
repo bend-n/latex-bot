@@ -103,13 +103,12 @@ gdscript/warnings/return_value_discarded=false
 
 [display]
 
-window/size/width=320
-window/size/height=180
-window/size/test_width=1280
-window/size/test_height=720
+window/size/width=40
+window/size/height=40
+window/size/resizable=false
+window/size/test_width=40
+window/size/test_height=40
 window/dpi/allow_hidpi=true
-window/stretch/mode="2d"
-window/stretch/aspect="keep"
 
 [editor_plugins]
 

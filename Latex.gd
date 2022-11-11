@@ -25,11 +25,17 @@ func _ready() -> void:
 	bot.TOKEN = token
 	bot.connect("bot_ready", self, "_on_bot_ready")
 	bot.connect("message_create", self, "_on_message_create")
+	bot.connect("interaction_create", self, "_on_interaction_create")
 	bot.login()
 
 
 func _on_bot_ready(bot: DiscordBot) -> void:
 	bot.set_presence({"activity": {"type": "Game", "name": "Printing LaTeX"}})
+	var latex_cmd: ApplicationCommand = ApplicationCommand.new() \
+	  .set_name("latex") \
+	  .add_option(ApplicationCommand.string_option("latex", "The LaTeX to render", { required = true })) \
+	  .set_description("Render LaTeX")
+	bot.register_command(latex_cmd)
 	print("Logged in as " + bot.user.username + "#" + bot.user.discriminator)
 	print("Listening on " + str(bot.channels.size()) + " channels and " + str(bot.guilds.size()) + " guilds.")
 
@@ -54,12 +60,32 @@ func _on_message_create(bot: DiscordBot, message: Message, _channel: Dictionary)
 	if !msg:
 		return
 		
-	print("----\n%s\n----" % msg)
 	var img := latex2img(msg)
-	bot.reply(message, "Tex:", {"files": [{"name": "code.png", "media_type": "image/png", "data": img}]})
+	bot.reply(message, "Tex:", {"files": [{"name": "latex.png", "media_type": "image/png", "data": img}]})
 
+func _on_interaction_create(_bot: DiscordBot, interaction: DiscordInteraction) -> void:
+	if not interaction.is_command():
+		return
+
+	var command_data := interaction.data
+
+	match command_data.name:
+		"latex":
+			var pay: String = command_data.options[0].value.strip_edges()
+			if pay:
+				interaction.defer_reply();
+				var t := Time.get_ticks_usec()
+				var img := latex2img(command_data.options[0].value)
+				print_debug("took %.2f seconds" % ((Time.get_ticks_usec() - t) / 1000000.0))
+				interaction.edit_reply({"files": [{"content": "", "name": "latex.png", "media_type": "image/png", "data": img}]})
+			else:
+				interaction.reply({"content": "Bad latex"})
+		_:
+			interaction.reply({"content": "Invalid command"})
+	
 
 func latex2img(latex: String) -> PoolByteArray:
+	print_debug("----\n%s\n----" % latex)
 	var tex := laTeXture.new()
 	tex.LatexExpression = latex
 	tex.MathColor = Color.white
